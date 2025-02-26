@@ -66,17 +66,17 @@ class Trade:
     buy: bool
 
     def from_bitmart(trade, quote_price: float):
-        trade['id'] = int(trade['order_time'])  # shrug
-        trade['amount'] = Decimal(trade['count'])
-        trade['price'] = Decimal(trade['price'])
-        trade['buy'] = trade['type'] == 'buy'
-        trade['timeStamp'] = int(trade['order_time'] / 1000)
-        trade['timeStamp'] = datetime.fromtimestamp(trade['order_time'] / 1000, tz=timezone.utc)
-        trade = {k: trade[k] for k in trade if k in Trade.__match_args__}
-        trade['market'] = MARKET_BITMART
-        trade['quote'] = MARKETS[MARKET_BITMART]['quote']
-        trade['usd_value'] = float(trade['amount'] * trade['price'] * Decimal(quote_price))
-        return Trade(**trade)
+        trade_dict = {
+            'id': int(trade[1]),
+            'market': MARKET_BITMART,
+            'timeStamp': datetime.fromtimestamp(int(trade[1]) / 1000, tz=timezone.utc),
+            'amount': Decimal(trade[3]),
+            'price': Decimal(trade[2]),
+            'buy': trade[4] == 'buy',
+            'quote': MARKETS[MARKET_BITMART]['quote'],
+        }
+        trade_dict['usd_value'] = float(trade_dict['amount'] * trade_dict['price'] * Decimal(quote_price))
+        return Trade(**trade_dict)
 
     def from_vitex(trade, quote_price: float):
         trade['id'] = int(trade['timestamp'])  # shrug
@@ -196,12 +196,14 @@ async def bitmart_trades(log, conf: CexConfig, prices: dict, event_chan):
     while True:
         try:
             await asyncio.sleep(conf.interval + random.random())
-            r = await s.get('https://api-cloud.bitmart.com/spot/v1/symbols/trades?symbol=IDNA_USDT')
-            trades = (await r.json())['data']['trades']
+            r = await s.get('https://api-cloud.bitmart.com/spot/quotation/v3/trades?symbol=IDNA_USDT')
+            response = await r.json()
+            trades = response['data']
+            
             if trades and len(trades) > 0:
                 quote_price = prices[MARKETS[MARKET_BITMART]['quote']]
                 trades = list(map(lambda t: Trade.from_bitmart(t, quote_price),
-                           filter(lambda t: t['order_time'] > last_trade_id, trades)))
+                           filter(lambda t: int(t[1]) > last_trade_id, trades)))
                 if len(trades) == 0:
                     continue
                 event_chan.put_nowait(trades)
@@ -213,3 +215,4 @@ async def bitmart_trades(log, conf: CexConfig, prices: dict, event_chan):
             log.error(f'BitMart exception: "{e}"', exc_info=True)
             await asyncio.sleep(conf.interval)
     await s.close()
+
