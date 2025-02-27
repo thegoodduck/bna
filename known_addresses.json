@@ -1,3 +1,4 @@
+
 {
     "0xc1bcdc9eb37d8e72ff0e0ca4bc8d19735b1b38ce": {
         "name": "iDNA/BUSD Pool",
@@ -176,6 +177,10 @@
         "type": "cex"
     },
     "0x993Bf1433532704630B6217940E81E973FFB4f98": {
+        "name": "BitMart Old",
+        "type": "cex"
+    },
+    "0x403a9f6219E8Aa493EcD40e342d5a886e901F8e9": {
         "name": "BitMart",
         "type": "cex"
     },
