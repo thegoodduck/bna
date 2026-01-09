@@ -82,7 +82,7 @@ class IdenaListener:
         ident_task = asyncio.create_task(self.identities_cacher(), name='idena_identity_fetcher')
 
         last_block: int = await self.db.get_last_block(CHAIN_IDENA)
-        # last_block = 5549620
+        # last_block = 9258177
         block: dict = None
         state: str = 'GET_NEXT_BLOCK' if last_block is not None else 'GET_HEIGHT'
         retry_block = 0
