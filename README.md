@@ -106,4 +106,4 @@ Libraries used:
 ### Copyright and license
 This program is released under the MIT License (see LICENSE file).
 
-Copyright © 2023 bus.
+Copyright © 2026 bus.
